@@ -1,0 +1,160 @@
+version: '3.8'
+
+networks:
+  redis-cluster-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+services:
+
+  
+  redis-master-1:
+    build: .
+    container_name: redis-master-1
+    command: >
+      redis-server
+      --port 6379
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --appendfsync everysec
+    ports:
+      - "6379:6379"
+    networks:
+      redis-cluster-net:
+        ipv4_address: 172.20.0.11
+    volumes:
+      - redis-master-1-data:/data
+
+  redis-master-2:
+    build: .
+    container_name: redis-master-2
+    command: >
+      redis-server
+      --port 6379
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --appendfsync everysec
+    ports:
+      - "6380:6379"
+    networks:
+      redis-cluster-net:
+        ipv4_address: 172.20.0.12
+    volumes:
+      - redis-master-2-data:/data
+
+  redis-master-3:
+    build: .
+    container_name: redis-master-3
+    command: >
+      redis-server
+      --port 6379
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --appendfsync everysec
+    ports:
+      - "6381:6379"
+    networks:
+      redis-cluster-net:
+        ipv4_address: 172.20.0.13
+    volumes:
+      - redis-master-3-data:/data
+
+  redis-replica-1:
+    build: .
+    container_name: redis-replica-1
+    command: >
+      redis-server
+      --port 6379
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --appendfsync everysec
+    ports:
+      - "6382:6379"
+    networks:
+      redis-cluster-net:
+        ipv4_address: 172.20.0.14
+    volumes:
+      - redis-replica-1-data:/data
+
+  redis-replica-2:
+    build: .
+    container_name: redis-replica-2
+    command: >
+      redis-server
+      --port 6379
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --appendfsync everysec
+    ports:
+      - "6383:6379"
+    networks:
+      redis-cluster-net:
+        ipv4_address: 172.20.0.15
+    volumes:
+      - redis-replica-2-data:/data
+
+  redis-replica-3:
+    build: .
+    container_name: redis-replica-3
+    command: >
+      redis-server
+      --port 6379
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --appendfsync everysec
+    ports:
+      - "6384:6379"
+    networks:
+      redis-cluster-net:
+        ipv4_address: 172.20.0.16
+    volumes:
+      - redis-replica-3-data:/data
+
+  redis-cluster-init:
+    build: .
+    container_name: redis-cluster-init
+    depends_on:
+      - redis-master-1
+      - redis-master-2
+      - redis-master-3
+      - redis-replica-1
+      - redis-replica-2
+      - redis-replica-3
+    networks:
+      - redis-cluster-net
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        sleep 5
+        redis-cli --cluster create \
+          172.20.0.11:6379 \
+          172.20.0.12:6379 \
+          172.20.0.13:6379 \
+          172.20.0.14:6379 \
+          172.20.0.15:6379 \
+          172.20.0.16:6379 \
+          --cluster-replicas 1 \
+          --cluster-yes
+        echo "Redis Cluster iniciado com sucesso!"
+
+volumes:
+  redis-master-1-data:
+  redis-master-2-data:
+  redis-master-3-data:
+  redis-replica-1-data:
+  redis-replica-2-data:
+  redis-replica-3-data:

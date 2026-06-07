@@ -32,6 +32,7 @@ sgbd2-projeto-nosql/
 |
 |-- docker/
 |   |-- docker-compose.yml        # Orquestracao do Redis Cluster (6 nos)
+|-- |-- Dockerfile                # Dockerfile personalizado que já inclui Python3 e as bibliotecas
 |   |-- redis-cluster-init.sh     # Script alternativo de inicializacao manual
 |
 |-- scripts/
@@ -76,6 +77,8 @@ pip install redis faker
 ---
 
 ## Execucao Passo a Passo
+
+### Passo 0 - abrir o docker desktop no windows
 
 ### Passo 1 — Clonar o repositorio
 
@@ -122,7 +125,9 @@ A execucao demora aproximadamente 13 minutos.
 
 ```bash
 # Copiar o script para dentro do contentor
-docker cp scripts/seeding.py redis-master-1:/seeding.py
+cd..
+cd scripts
+docker cp seeding.py redis-master-1:/seeding.py
 
 # Executar o seeding dentro do contentor
 docker exec -it redis-master-1 python3 /seeding.py
@@ -141,7 +146,7 @@ Resultado esperado: aproximadamente 67.000 chaves por master
 
 ```bash
 # Copiar o script para dentro do contentor
-docker cp scripts/queries.py redis-master-1:/queries.py
+docker cp queries.py redis-master-1:/queries.py
 
 # Executar a demonstracao dos 11 padroes de acesso
 docker exec -it redis-master-1 python3 /queries.py
@@ -158,7 +163,8 @@ Este passo requer dois terminais abertos simultaneamente.
 **Terminal 1 — Executar o benchmark:**
 
 ```bash
-docker cp scripts/benchmark.py redis-master-1:/benchmark.py
+#navegar ate a pasta scripts e executar
+docker cp benchmark.py redis-master-1:/benchmark.py
 docker exec -it redis-master-1 python3 /benchmark.py
 ```
 
@@ -170,6 +176,7 @@ Na Parte B, o script pausa e instrui o que executar no Terminal 2.
 Na Fase 2 (simular falha), executar:
 
 ```bash
+#executar
 docker stop redis-master-2
 ```
 
@@ -186,7 +193,8 @@ docker start redis-master-2
 Parar os contentores sem apagar os dados:
 
 ```bash
-cd docker
+
+cd docker #navegar ate a pasta docker
 docker-compose down
 ```
 
